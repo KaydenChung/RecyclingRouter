@@ -1,0 +1,84 @@
+body {
+  font-family: system-ui, sans-serif;
+  background-color: lightgray;
+}
+
+h1 {
+  color: #059669;
+}
+
+.page-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.back-container {
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  text-decoration: none;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #059669;
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  display: inline-block;
+}
+
+#map {
+  height: 500px;
+  border: 2px solid black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.map-box {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.driver-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.driver-section {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.driver-heading {
+  font-weight: bold;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.driver-1 { 
+  color: red;
+}
+.driver-2 {
+  color: blue;
+}
+.driver-3 {
+  color: green;
+}
+.driver-4 {
+  color: orange;
+}
+
+ul {
+  padding-left: 1.25rem;
+}
+
+li {
+  margin-bottom: 1rem;
+  list-style-type: disc;
+}
+

@@ -1,0 +1,5 @@
+Flask==3.0.3
+python_dotenv==1.1.0
+pandas==2.2.3
+openrouteservice==2.3.3
+scikit_learn==1.6.1
