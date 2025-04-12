@@ -162,10 +162,10 @@ textarea {
   font-weight: 500;
 }
 
-.loading-spinner {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+.loading-gif {
   color: #059669;
+  width: 75px;
+  height: 75px;
 }
 
 .hidden {

@@ -1,12 +1,16 @@
 # Library Imports
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
 import pandas as pd
-import os
-import openrouteservice
-from sklearn.cluster import KMeans
 import numpy as np
 from collections import defaultdict
-from dotenv import load_dotenv
+from sklearn.cluster import KMeans
+import openrouteservice
+from openrouteservice.exceptions import ApiError
+import warnings
+# Supress OpenRouteService Warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="openrouteservice")
 
 # Load Environment Variables
 load_dotenv()
@@ -26,15 +30,19 @@ def geocodeAddress(address):
         return features[0]['geometry']['coordinates']
     return None
 
-# Retrieves Driving Distance and Duration Between 2 coordinate Addresses Using OpenRouteService API
+# Retrieves Driving Distance and Duration Between 2 Coordinate Addresses Using OpenRouteService API
 def getRouteInfo(startCoords, endCoords):
-    route = client.directions(
-        coordinates=[startCoords, endCoords],
-        profile='driving-car',
-        format='geojson'
-    )
-    segment = route['features'][0]['properties']['segments'][0]
-    return segment['distance'], segment['duration']
+    try:
+        route = client.directions(
+            coordinates=[startCoords, endCoords],
+            profile='driving-car',
+            format='geojson'
+        )
+        segment = route['features'][0]['properties']['segments'][0]
+        return segment['distance'], segment['duration']
+    except ApiError as e:
+        print(f"Failed to get route between {startCoords} and {endCoords}: {e}")
+        return None, None
 
 # Renders Homepage
 @app.route('/')
@@ -45,7 +53,7 @@ def home():
 @app.route('/process', methods=['POST'])
 def process():
 
-    # Check for Request File or manually Inputted Addresses
+    # Check for Request File or Manually Inputted Addresses
     startAddress = request.form.get('startingAddress', '').strip()
     file = request.files.get('file')
     manualInput = request.form.get('manualAddresses')
@@ -89,13 +97,30 @@ def process():
     else:
         return "Please either upload a valid CSV file or enter manual addresses.", 400
 
+    # Filter Routable Points From Start Address
+    routablePoints = []
+    skippedCount = 0
+    for p in rawPoints:
+        curr_coords = [p['lng'], p['lat']]
+        distance, duration = getRouteInfo([startLng, startLat], curr_coords)
+        if distance is not None and duration is not None:
+            p['start_distance'] = distance
+            p['start_duration'] = duration
+            routablePoints.append(p)
+        else:
+            print(f"Skipping unroutable point before clustering: {p['label']}")
+            skippedCount += 1
+
+    if len(routablePoints) < 4:
+        return "Not enough routable points to assign 4 drivers.", 400
+
     # Cluster Points Using KMeans
-    coordsArray = np.array([[p['lat'], p['lng']] for p in rawPoints])
+    coordsArray = np.array([[p['lat'], p['lng']] for p in routablePoints])
     kmeans = KMeans(n_clusters=4, random_state=42).fit(coordsArray)
 
     # Group Points by Cluster
     clusters = defaultdict(list)
-    for i, point in enumerate(rawPoints):
+    for i, point in enumerate(routablePoints):
         clusterId = kmeans.labels_[i]
         clusters[clusterId].append(point)
 
@@ -115,6 +140,11 @@ def process():
         for p in points:
             curr_coords = [p['lng'], p['lat']]
             distance, duration = getRouteInfo(prev_coords, curr_coords)
+
+            if distance is None or duration is None:
+                print(f"Skipping Unroutable Point: {p['label']}")
+                continue
+
             route_points.append({
                 'lat': p['lat'],
                 'lng': p['lng'],

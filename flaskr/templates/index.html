@@ -69,8 +69,8 @@
         <!-- Loading Animation -->
         <div id="loadingOverlay" class="loading-overlay">
           <div class="loading-content">
-            <i class="fas fa-spinner fa-spin loading-spinner"></i>
-            <p>Optimizing routes, please wait...</p>
+            <img src="../static/loadingSpinner.gif" alt="Loading..." class="loading-gif"/>
+            <p>Mapping Routes, Please Wait...</p>
           </div>
         </div>
 
@@ -84,11 +84,16 @@
     const fileInput = document.getElementById('fileUpload');
 
     toggleBtn.addEventListener('click', () => {
-      const isManual = manualInput.classList.contains('hidden');
-      manualInput.classList.toggle('hidden', !isManual);
-      fileUpload.classList.toggle('hidden', isManual);
-      fileInput.required = isManual;
-      toggleBtn.textContent = isManual ? 'Switch to File Upload' : 'Switch to Manual Address Input';
+      const isSwitchingToManual = fileUpload.classList.contains('hidden');
+      manualInput.classList.toggle('hidden', isSwitchingToManual);
+      fileUpload.classList.toggle('hidden', !isSwitchingToManual);
+      if (!isSwitchingToManual) {
+        fileInput.removeAttribute('required');
+        fileInput.value = '';
+      } else {
+        fileInput.setAttribute('required', 'required');
+      }
+      toggleBtn.textContent = isSwitchingToManual ? 'Switch to Manual Address Input' : 'Switch to File Upload';
     });
 
     const fileNameDisplay = document.getElementById("fileName");
