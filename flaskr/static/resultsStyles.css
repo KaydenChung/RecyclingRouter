@@ -7,7 +7,7 @@ h1 {
   color: #059669;
 }
 
-.page-container {
+.container {
   max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
@@ -60,18 +60,12 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-.driver-1 { 
-  color: red;
-}
-.driver-2 {
-  color: blue;
-}
-.driver-3 {
-  color: green;
-}
-.driver-4 {
-  color: orange;
-}
+.driver-1 { color: red; }
+.driver-2 { color: blue; }
+.driver-3 { color: green; }
+.driver-4 { color: orange; }
+.driver-5 { color: purple; }
+.driver-6 { color: teal; }
 
 ul {
   padding-left: 1.25rem;

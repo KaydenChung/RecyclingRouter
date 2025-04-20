@@ -59,6 +59,7 @@ def process():
     manualInput = request.form.get('manualAddresses')
     if not startAddress:
         return "Missing starting address", 400
+    numDrivers = int(request.form.get('numDrivers', 4))
 
     # Geocode Starting Address
     startCoords = geocodeAddress(startAddress)
@@ -111,12 +112,12 @@ def process():
             print(f"Skipping unroutable point before clustering: {p['label']}")
             skippedCount += 1
 
-    if len(routablePoints) < 4:
-        return "Not enough routable points to assign 4 drivers.", 400
+    if len(routablePoints) < numDrivers:
+        return f"Not enough routable points to assign {numDrivers} drivers.", 400
 
     # Cluster Points Using KMeans
     coordsArray = np.array([[p['lat'], p['lng']] for p in routablePoints])
-    kmeans = KMeans(n_clusters=4, random_state=42).fit(coordsArray)
+    kmeans = KMeans(n_clusters=numDrivers, random_state=42).fit(coordsArray)
 
     # Group Points by Cluster
     clusters = defaultdict(list)
@@ -140,7 +141,6 @@ def process():
         for p in points:
             curr_coords = [p['lng'], p['lat']]
             distance, duration = getRouteInfo(prev_coords, curr_coords)
-
             if distance is None or duration is None:
                 print(f"Skipping Unroutable Point: {p['label']}")
                 continue

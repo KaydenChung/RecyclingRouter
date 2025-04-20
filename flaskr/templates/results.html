@@ -15,27 +15,35 @@
 
 <body>
 
-  <main class="page-container">
+  <div class="container">
 
+    <!-- Back Button -->
     <div class="back-container">
       <a href="/" class="back-link">← Back to Homepage</a>
     </div>
 
+    <!-- Page Title -->
     <h1>Routes From:<br>{{ start }}</h1>
 
+    <!-- Interactive Map -->
     <div id="map" class="map-box"></div>
 
+    <!-- Injected JSON Data from Python -->
     <script id="location-data" type="application/json">
       {{ mapPoints | tojson }}
     </script>
 
+    <!-- Map Initialization & Marker Rendering -->
     <script>
+
+      // Add OpenStreetMap Tiles
       const map = L.map('map');
       const bounds = [];
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
       }).addTo(map);
 
+      // Add Starting Location Marker
       const startLat = {{ startLat }};
       const startLng = {{ startLng }};
       L.marker([startLat, startLng])
@@ -44,7 +52,10 @@
         .openPopup();
       bounds.push([startLat, startLng]);
 
-      const colors = ["red", "blue", "green", "orange"];
+      // Marker Colors for Each Driver
+      const colors = ["red", "blue", "green", "orange", "purple", "teal"];
+
+      // Render Address Points per Driver
       const mapData = JSON.parse(document.getElementById('location-data').textContent);
       mapData.forEach((loc, i) => {
         const color = colors[(loc.driver - 1) % colors.length];
@@ -62,12 +73,18 @@
         bounds.push([loc.lat, loc.lng]);
       });
       map.fitBounds(bounds, { padding: [50, 50] });
+
     </script>
 
+    <!-- Driver Route Summaries -->
     <div class="driver-grid">
       {% for route in driverRoutes %}
         <div class="driver-section">
+
+          <!-- Driver Heading -->
           <h2 class="driver-heading driver-{{ loop.index }}">{{ route.driver }}</h2>
+
+          <!-- List of Assigned Addresses -->
           <ul>
             {% for stop in route.points %}
               <li>
@@ -76,13 +93,16 @@
               </li>
             {% endfor %}
           </ul>
+
+          <!-- Total Route Summary -->
           <p><strong>Total Distance:</strong> {{ '%.1f'|format(route.total_distance_km) }} km</p>
           <p><strong>Total Duration:</strong> {{ route.total_duration_min|round|int }} min</p>
+
         </div>
       {% endfor %}
     </div>
 
-  </main>
+  </div>
 
 </body>
 </html>
