@@ -144,7 +144,6 @@ def process():
             if distance is None or duration is None:
                 print(f"Skipping Unroutable Point: {p['label']}")
                 continue
-
             route_points.append({
                 'lat': p['lat'],
                 'lng': p['lng'],
@@ -175,5 +174,6 @@ def process():
 
 # Run Flask Development Server
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
 
