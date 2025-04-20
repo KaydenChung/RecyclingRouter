@@ -1,49 +1,49 @@
-# Project Title
+# 🚚 Recycling Router
 
-Route Runner
+## 📝 Description
 
-## Description
-
-Online Recycling Route Optimizing Tool  
+An Online Recycling Route Optimizing Tool  
 Developed by Kayden Chung  
 Created for KevO
 
-### Setup
+## 🛠️ Setup
 
-* Clone the Repository
-```
-git clone https://github.com/KaydenChung/RouteRunner.git
-```
-* Allow Windows to Run Scripts
-```
-Set-ExecutionPolicy Unrestricted -Scope Process
-```
-* Create Virtual Environment
-```
-python -m venv .venv
-```
-* Activate Virtual Environment
-#### Windows:
-```
-.venv\Scripts\activate
-```
-#### MacOS and Linux:
-```
-source .venv/bin/activate
-```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/KaydenChung/RouteRunner.git
+   ```
 
-### Execution
+2. **Allow Windows to Run Scripts**
+   ```powershell
+   Set-ExecutionPolicy Unrestricted -Scope Process
+   ```
 
-* Install Required Dependencies
-```
-pip install -r requirements.txt
-```
-* Navigate to flaskr Directory
-```
-cd flaskr/
-```
-* Run the Flask App
-```
-flask --app app run --debug
-```
+3. **Create Virtual Environment**
+   ```bash
+   python -m venv .venv
+   ```
+
+4. **Activate Virtual Environment**
+   
+   **Windows:**
+   ```bash
+   .venv\Scripts\activate
+   ```
+   
+   **MacOS and Linux:**
+   ```bash
+   source .venv/bin/activate
+   ```
+
+## 🚀 Execution
+
+1. **Install Required Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Run the Flask App**
+   ```bash
+   flask --app app run --debug
+   ```
 
