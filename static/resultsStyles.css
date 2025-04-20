@@ -42,9 +42,15 @@ h1 {
 
 .driver-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-top: 2rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .driver-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .driver-section {
