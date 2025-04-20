@@ -40,8 +40,14 @@ body {
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .card-title {
+    font-size: 1.5rem;
+  }
 }
 
 .card-content {
@@ -51,20 +57,30 @@ body {
   gap: 1rem;
 }
 
-.form-row {
+.form-rows {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.form-col-1 {
-  flex: 2;
-  min-width: 0;
+.form-row-1 {
+  flex: 1 1 70%;
+  min-width: 100%;
 }
 
-.form-col-2 {
-  flex: 1;
-  min-width: 100px;
+.form-row-2 {
+  flex: 1 1 30%;
+  min-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .form-col-1 {
+    min-width: 75%;
+  }
+
+  .form-col-2 {
+    min-width: 25%;
+  }
 }
 
 .label {
@@ -133,7 +149,7 @@ body {
 }
 
 textarea {
-  width: 100%;
+  width: 95%;
   min-height: 200px;
   max-width: 100%;
   border: 1px solid lightgray;
