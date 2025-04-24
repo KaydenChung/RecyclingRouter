@@ -9,8 +9,9 @@ from sklearn.cluster import KMeans
 import openrouteservice
 from openrouteservice.exceptions import ApiError
 import warnings
-# Supress OpenRouteService Warnings
+# Supress Warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="openrouteservice")
+os.environ['LOKY_MAX_CPU_COUNT'] = os.getenv('LOKY_MAX_CPU_COUNT', '4')
 
 # Load Environment Variables
 load_dotenv()
@@ -84,15 +85,16 @@ def process():
         file.save(filePath)
         try:
             df = pd.read_csv(filePath)
-            requiredCols = {'Address', 'City', 'Observed Latitude', 'Observed Longitude'}
+            requiredCols = {'Address', 'City'}
             if not requiredCols.issubset(df.columns):
-                return "CSV must contain 'Address', 'City', 'Observed Latitude', and 'Observed Longitude' columns.", 400
-            df = df.dropna(subset=['Observed Latitude', 'Observed Longitude'])
-            df['fullAddress'] = df['Address'].astype(str) + ", " + df['City'].astype(str)
+                return "CSV must contain 'Address' and 'City' columns.", 400
+            df['fullAddress'] = df['Address'].astype(str) + ", " + df['City'].astype(str) + ", Ontario"
             for _, row in df.iterrows():
-                lat, lng = row['Observed Latitude'], row['Observed Longitude']
-                label = row['fullAddress']
-                rawPoints.append({'lat': lat, 'lng': lng, 'label': label})
+                full_address = row['fullAddress']
+                coords = geocodeAddress(full_address)
+                if coords:
+                    lng, lat = coords
+                    rawPoints.append({'lat': lat, 'lng': lng, 'label': full_address})
         except Exception as e:
             return f"Error processing CSV file: {str(e)}", 500
     else:
@@ -154,14 +156,12 @@ def process():
             total_distance_km += distance / 1000
             total_duration_min += duration / 60
             prev_coords = curr_coords
-        
         driverRoutes.append({
             'driver': f"Driver {clusterId + 1}",
             'points': route_points,
             'total_distance_km': round(total_distance_km, 2),
             'total_duration_min': round(total_duration_min, 1)
         })
-        
         mapPoints.extend([{**p, 'driver': int(clusterId + 1)} for p in route_points])
 
     # Render Results Page with Route Summaries and Map
