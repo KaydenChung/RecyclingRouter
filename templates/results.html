@@ -97,12 +97,62 @@
           <!-- Total Route Summary -->
           <p><strong>Total Distance:</strong> {{ '%.1f'|format(route.total_distance_km) }} km</p>
           <p><strong>Total Duration:</strong> {{ route.total_duration_min|round|int }} min</p>
+          
+          <!-- Send Route Button -->
+          <div class="send-route-container">
+            <button class="send-route-btn" onclick="togglePhoneInput('{{ loop.index }}')">Send Route</button>
+            <div id="phone-input-{{ loop.index }}" class="phone-input hidden">
+              <input type="text" id="phone-{{ loop.index }}" placeholder="Enter Phone Number">
+              <button onclick="sendRoute('{{ loop.index }}')" data-route='{{ route.points | tojson | safe }}'>Submit</button>
+            </div>
+          </div>
 
         </div>
       {% endfor %}
     </div>
-
   </div>
+
+  <!-- Send Route JavaScript -->
+  <script>
+    function togglePhoneInput(index) {
+      const inputDiv = document.getElementById(`phone-input-${index}`);
+      inputDiv.classList.toggle('hidden');
+    }
+    function sendRoute(index) {
+      const phoneNumber = document.getElementById(`phone-${index}`).value;
+      const routeData = document.querySelector(`#phone-input-${index} button`).dataset.route;
+      if (!phoneNumber) {
+        alert('Please enter a phone number.');
+        return;
+      }
+      let routePoints;
+      try {
+        routePoints = JSON.parse(routeData);
+      } catch (e) {
+        console.error("Invalid route JSON:", e);
+        alert("Error preparing route data.");
+        return;
+      }
+
+      fetch('/send_route', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber, route: routePoints })
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('✅ Route sent successfully!');
+          document.getElementById(`phone-input-${index}`).classList.add('hidden');
+        } else {
+          alert('❌ Failed to send route.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('❌ Error sending route.');
+      });
+    }
+  </script>
 
 </body>
 </html>

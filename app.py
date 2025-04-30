@@ -1,13 +1,14 @@
 # Library Imports
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import numpy as np
 from collections import defaultdict
 from sklearn.cluster import KMeans
 import openrouteservice
 from openrouteservice.exceptions import ApiError
+from twilio.rest import Client as TwilioClient
 import warnings
 # Supress Warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="openrouteservice")
@@ -17,6 +18,11 @@ os.environ['LOKY_MAX_CPU_COUNT'] = os.getenv('LOKY_MAX_CPU_COUNT', '4')
 load_dotenv()
 ORS_API_KEY = os.getenv('ORS_API_KEY')
 client = openrouteservice.Client(key=ORS_API_KEY)
+
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -88,13 +94,25 @@ def process():
             requiredCols = {'Address', 'City'}
             if not requiredCols.issubset(df.columns):
                 return "CSV must contain 'Address' and 'City' columns.", 400
+            
+            # Combine Address, City and Province to Full Address
             df['fullAddress'] = df['Address'].astype(str) + ", " + df['City'].astype(str) + ", Ontario"
+
             for _, row in df.iterrows():
-                full_address = row['fullAddress']
-                coords = geocodeAddress(full_address)
-                if coords:
-                    lng, lat = coords
-                    rawPoints.append({'lat': lat, 'lng': lng, 'label': full_address})
+                label = row['fullAddress']
+                lat, lng = None, None
+
+                if 'Observed Latitude' in row and 'Observed Longitude' in row and pd.notna(row['Observed Latitude']) and pd.notna(row['Observed Longitude']):
+                    lat = row['Observed Latitude']
+                    lng = row['Observed Longitude']
+                else:
+                    coords = geocodeAddress(label)
+                    if coords:
+                        lng, lat = coords
+
+                if lat is not None and lng is not None:
+                    rawPoints.append({'lat': lat, 'lng': lng, 'label': label})
+
         except Exception as e:
             return f"Error processing CSV file: {str(e)}", 500
     else:
@@ -171,6 +189,33 @@ def process():
                            mapPoints=mapPoints,
                            startLat=startLat,
                            startLng=startLng)
+
+@app.route('/send_route', methods=['POST'])
+def send_route():
+    data = request.json
+    phone_number = data.get('phone')
+    route_points = data.get('route', [])
+    
+    if not phone_number or not route_points:
+        return jsonify({'error': 'Missing phone number or route'}), 400
+
+    try:
+        # Create Message
+        for point in route_points:
+            body += f"- {point['label']} ({point['distance_km']} km, {int(round(point['duration_min']))} min)\n"
+
+        # Send SMS
+        message = twilio_client.messages.create(
+            body=body,
+            from_=TWILIO_PHONE_NUMBER,
+            to=phone_number
+        )
+
+        return jsonify({'status': 'Message sent!', 'sid': message.sid}), 200
+
+    except Exception as e:
+        print(f"Error sending SMS: {e}")
+        return jsonify({'error': 'Failed to send message'}), 500
 
 # Run Flask Development Server
 if __name__ == '__main__':

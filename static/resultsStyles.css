@@ -82,3 +82,41 @@ li {
   list-style-type: disc;
 }
 
+.send-route-container {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.send-route-btn {
+  background-color: #059669;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.phone-input {
+  margin-top: 0.5rem;
+}
+
+.phone-input input {
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+
+.phone-input button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
