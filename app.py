@@ -21,8 +21,7 @@ client = openrouteservice.Client(key=ORS_API_KEY)
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
-twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+twilioClient = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -192,29 +191,35 @@ def process():
 
 @app.route('/send_route', methods=['POST'])
 def send_route():
+
     data = request.json
-    phone_number = data.get('phone')
-    route_points = data.get('route', [])
-    
-    if not phone_number or not route_points:
-        return jsonify({'error': 'Missing phone number or route'}), 400
+    phoneNumber = data.get('phone')
+    routePoints = data.get('route', [])
+
+    if not phoneNumber or not routePoints:
+        return jsonify({'error': 'Missing phone number or route.'}), 400
 
     try:
-        # Create Message
-        for point in route_points:
+        
+        # Prefix with 'whatsapp:'
+        whatsapp = f'whatsapp:{phoneNumber}'
+
+        # Construct Message
+        body = "📍 Your Recycling Route:\n"
+        for point in routePoints:
             body += f"- {point['label']} ({point['distance_km']} km, {int(round(point['duration_min']))} min)\n"
 
-        # Send SMS
-        message = twilio_client.messages.create(
+        # Send WhatsApp Message
+        message = twilioClient.messages.create(
             body=body,
-            from_=TWILIO_PHONE_NUMBER,
-            to=phone_number
+            from_=os.getenv('TWILIO_WHATSAPP_NUMBER'),
+            to=whatsapp
         )
 
         return jsonify({'status': 'Message sent!', 'sid': message.sid}), 200
 
     except Exception as e:
-        print(f"Error sending SMS: {e}")
+        print(f"Error sending WhatsApp message: {e}")
         return jsonify({'error': 'Failed to send message'}), 500
 
 # Run Flask Development Server
